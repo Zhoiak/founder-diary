@@ -14,7 +14,8 @@ import {
   Search,
   Home,
   Settings,
-  Lightbulb
+  Lightbulb,
+  GraduationCap
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -93,6 +94,15 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       icon: BarChart3,
       action: () => router.push('/analytics'),
       keywords: ['analytics', 'stats', 'insights', 'charts'],
+      category: 'navigation'
+    },
+    {
+      id: 'nav-learning',
+      label: 'Go to Learning & Flashcards',
+      description: 'Manage your learning materials and review flashcards',
+      icon: GraduationCap,
+      action: () => router.push('/learning'),
+      keywords: ['learning', 'flashcards', 'study', 'spaced repetition', 'highlights'],
       category: 'navigation'
     },
 
