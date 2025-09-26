@@ -13,8 +13,8 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { 
   Plus, ArrowLeft, BookOpen, Play, Pause, CheckCircle, 
-  Clock, Star, Highlight, Brain, Zap, RotateCcw,
-  ExternalLink, Quote, Lightbulb
+  Clock, Star, Highlighter, Brain, Zap, RotateCcw,
+  ExternalLink, Quote, Lightbulb, FileText, Headphones, GraduationCap
 } from "lucide-react";
 import Link from "next/link";
 
@@ -510,7 +510,7 @@ export default function LearningPage() {
                         {/* Stats */}
                         <div className="flex justify-between text-sm text-gray-600">
                           <span className="flex items-center gap-1">
-                            <Highlight className="w-4 h-4" />
+                            <Highlighter className="w-4 h-4" />
                             {item.highlights_count} highlights
                           </span>
                           {item.rating && (
