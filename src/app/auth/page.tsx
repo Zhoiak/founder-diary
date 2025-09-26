@@ -70,16 +70,37 @@ export default function AuthPage() {
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" required />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Sending..." : "Send magic link"}
             </Button>
           </form>
           <div className="my-6 flex items-center gap-2 text-sm text-muted-foreground">
             <div className="h-px flex-1 bg-border" /> OR <div className="h-px flex-1 bg-border" />
           </div>
-          <div className="grid gap-2">
-            <Button variant="outline" onClick={() => signInOAuth("google")} disabled={loading}>Continue with Google</Button>
-            <Button variant="outline" onClick={() => signInOAuth("github")} disabled={loading}>Continue with GitHub</Button>
+          <div className="grid grid-cols-2 gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => signInOAuth("google")}
+              disabled={loading}
+              className="bg-blue-50 hover:bg-blue-100"
+            >
+              Continue with Google
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => signInOAuth("github")}
+              disabled={loading}
+              className="bg-gray-50 hover:bg-gray-100"
+            >
+              Continue with GitHub
+            </Button>
           </div>
+          
+          {loading && (
+            <div className="text-center text-sm text-red-600 bg-red-50 p-3 rounded">
+              <strong>Rate limit hit!</strong> Too many magic link requests. Try OAuth above or wait 5-10 minutes.
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
