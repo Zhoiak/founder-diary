@@ -114,15 +114,22 @@ export default function LogsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedProject) return;
+    if (!selectedProject || !formData.title.trim()) return;
+
+    // Validate time spent
+    const timeSpent = formData.time_spent_minutes ? parseInt(formData.time_spent_minutes) : undefined;
+    if (timeSpent && (timeSpent < 0 || timeSpent > 1440)) {
+      toast.error("Time spent must be between 0 and 1440 minutes (24 hours)");
+      return;
+    }
 
     const payload = {
       projectId: selectedProject,
-      title: formData.title,
-      content_md: formData.content_md,
+      title: formData.title.trim(),
+      content_md: formData.content_md.trim(),
       tags: formData.tags.split(",").map(t => t.trim()).filter(Boolean),
       mood: formData.mood ? parseInt(formData.mood) : undefined,
-      time_spent_minutes: formData.time_spent_minutes ? parseInt(formData.time_spent_minutes) : undefined,
+      time_spent_minutes: timeSpent,
       date: formData.date,
     };
 
@@ -271,10 +278,15 @@ export default function LogsPage() {
                         <Input
                           id="time"
                           type="number"
+                          min="0"
+                          max="1440"
                           value={formData.time_spent_minutes}
                           onChange={(e) => setFormData({ ...formData, time_spent_minutes: e.target.value })}
                           placeholder="480"
                         />
+                        <p className="text-xs text-gray-500">
+                          Maximum 1440 minutes (24 hours) per day
+                        </p>
                       </div>
                     </div>
                     <div className="space-y-2">

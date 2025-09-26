@@ -183,19 +183,38 @@ export default function Dashboard() {
                     Create Your First Project
                   </Button>
                 </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Project</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={createProject} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Project Name</Label>
+                      <Input
+                        id="name"
+                        value={newProjectName}
+                        onChange={(e) => setNewProjectName(e.target.value)}
+                        placeholder="My Startup"
+                        required
+                      />
+                    </div>
+                    <Button type="submit" disabled={creating} className="w-full">
+                      {creating ? "Creating..." : "Create Project"}
+                    </Button>
+                  </form>
+                </DialogContent>
               </Dialog>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-8">
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
               <Link href="/logs">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                   <CardContent className="flex items-center p-6">
                     <BookOpen className="w-8 h-8 text-blue-500 mr-4" />
                     <div>
-                      <h3 className="font-semibold">Daily Logs</h3>
                       <p className="text-sm text-gray-600">Record your progress</p>
                     </div>
                   </CardContent>
@@ -233,6 +252,18 @@ export default function Dashboard() {
                     <div>
                       <h3 className="font-semibold">Analytics</h3>
                       <p className="text-sm text-gray-600">View insights</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              <Link href="/decisions">
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardContent className="flex items-center p-6">
+                    <FileText className="w-8 h-8 text-indigo-500 mr-4" />
+                    <div>
+                      <h3 className="font-semibold">Decisions</h3>
+                      <p className="text-sm text-gray-600">Architecture decisions</p>
                     </div>
                   </CardContent>
                 </Card>
