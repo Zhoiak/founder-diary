@@ -14,7 +14,9 @@ export const dynamic = 'force-dynamic';
 export default function AuthPage() {
   const supabase = createClient();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
   // Check if user is already authenticated
   useEffect(() => {
@@ -30,6 +32,31 @@ export default function AuthPage() {
     
     checkAuth();
   }, [supabase]);
+
+  const signInWithPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({ 
+          email, 
+          password,
+          options: { emailRedirectTo: `${window.location.origin}` }
+        });
+        if (error) throw error;
+        toast("Account created! Check your email to verify your account.");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast("Signed in successfully!");
+        window.location.href = "/";
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Authentication failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const signInWithMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,16 +87,64 @@ export default function AuthPage() {
     <div className="min-h-screen grid place-items-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Sign in to Founder Diary</CardTitle>
-          <CardDescription>Use magic link or OAuth</CardDescription>
+          <CardTitle>{isSignUp ? "Create Account" : "Sign in to Founder Diary"}</CardTitle>
+          <CardDescription>Choose your preferred authentication method</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={signInWithMagicLink} className="space-y-4">
+          {/* Email/Password Form */}
+          <form onSubmit={signInWithPassword} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" required />
+              <Input 
+                id="email" 
+                type="email" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                placeholder="you@company.com" 
+                required 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input 
+                id="password" 
+                type="password" 
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                placeholder="Your password" 
+                required 
+                minLength={6}
+              />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Loading..." : (isSignUp ? "Create Account" : "Sign In")}
+            </Button>
+          </form>
+          
+          <div className="text-center mt-4">
+            <Button 
+              type="button" 
+              variant="link" 
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-sm"
+            >
+              {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+            </Button>
+          </div>
+
+          <div className="my-6 flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="h-px flex-1 bg-border" /> OR <div className="h-px flex-1 bg-border" />
+          </div>
+
+          {/* Magic Link Form */}
+          <form onSubmit={signInWithMagicLink} className="space-y-4">
+            <Button 
+              type="submit" 
+              variant="outline" 
+              className="w-full" 
+              disabled={loading}
+            >
+              {loading ? "Sending..." : "Send Magic Link"}
             </Button>
           </form>
           <div className="my-6 flex items-center gap-2 text-sm text-muted-foreground">
