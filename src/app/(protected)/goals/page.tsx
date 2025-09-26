@@ -3,13 +3,14 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Target, TrendingUp, Calendar, Edit2 } from "lucide-react";
+import { Plus, Target, TrendingUp, Calendar, ArrowLeft, Edit2, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 interface KeyResult {
   id: string;
@@ -120,6 +121,9 @@ export default function GoalsPage() {
     if (!selectedProject) return;
 
     const payload = {
+      projectId: selectedProject,
+      objective: formData.objective,
+      due_date: formData.due_date || undefined,
       key_results: formData.key_results
         .filter(kr => kr.name.trim())
         .map(kr => ({
@@ -185,6 +189,25 @@ export default function GoalsPage() {
     return "bg-red-500";
   };
 
+  const deleteGoal = async (goalId: string) => {
+    if (!confirm("Are you sure you want to delete this goal? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/goals/${goalId}`, {
+        method: "DELETE",
+      });
+      
+      if (!res.ok) throw new Error("Failed to delete goal");
+      
+      setGoals(goals.filter(goal => goal.id !== goalId));
+      toast.success("Goal deleted successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete goal");
+    }
+  };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
@@ -194,7 +217,15 @@ export default function GoalsPage() {
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold text-gray-900">Goals & OKRs</h1>
+            <div className="flex items-center gap-4">
+              <Link href="/">
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+              <h1 className="text-2xl font-bold text-gray-900">Goals & OKRs</h1>
+            </div>
             <div className="flex items-center gap-4">
               <Select value={selectedProject} onValueChange={setSelectedProject}>
                 <SelectTrigger className="w-48">
@@ -352,6 +383,14 @@ export default function GoalsPage() {
                         )}
                       </CardDescription>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteGoal(goal.id)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent>

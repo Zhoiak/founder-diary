@@ -55,39 +55,65 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
-  if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  try {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const body = await req.json().catch(() => ({}));
-  const parse = CreateLogSchema.safeParse(body);
-  if (!parse.success) {
-    return NextResponse.json({ error: parse.error.flatten() }, { status: 400 });
+    console.log("Creating log for user:", session.user.id);
+    
+    const body = await req.json().catch(() => ({}));
+    console.log("Log request body:", body);
+    
+    const parse = CreateLogSchema.safeParse(body);
+    if (!parse.success) {
+      console.log("Log validation error:", parse.error.flatten());
+      return NextResponse.json({ error: parse.error.flatten() }, { status: 400 });
+    }
+    
+    console.log("Log validation passed:", parse.data);
+
+    const supabase = await createServerSupabase();
+
+    // Verify user has access to this project
+    const { data: membership } = await supabase
+      .from("project_members")
+      .select("role")
+      .eq("project_id", parse.data.projectId)
+      .eq("user_id", session.user.id)
+      .single();
+
+    if (!membership) {
+      console.log("Access denied - no membership found");
+      return NextResponse.json({ error: "access denied" }, { status: 403 });
+    }
+
+    console.log("Creating log in database");
+
+    const { data: log, error } = await supabase
+      .from("daily_logs")
+      .insert({
+        project_id: parse.data.projectId,
+        user_id: session.user.id,
+        date: parse.data.date,
+        title: parse.data.title,
+        content_md: parse.data.content_md,
+        tags: parse.data.tags,
+        mood: parse.data.mood,
+        time_spent_minutes: parse.data.time_spent_minutes,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Log creation error:", error);
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    console.log("Log created:", log);
+    return NextResponse.json({ log }, { status: 201 });
+    
+  } catch (error) {
+    console.error("Error in POST /api/logs:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  const supabase = await createServerSupabase();
-
-  // Verify user has access to this project
-  const { data: membership } = await supabase
-    .from("project_members")
-    .select("role")
-    .eq("project_id", parse.data.projectId)
-    .eq("user_id", session.user.id)
-    .single();
-
-  if (!membership) {
-    return NextResponse.json({ error: "access denied" }, { status: 403 });
-  }
-
-  const { data: log, error } = await supabase
-    .from("daily_logs")
-    .insert({
-      ...parse.data,
-      project_id: parse.data.projectId,
-      user_id: session.user.id,
-    })
-    .select()
-    .single();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ log }, { status: 201 });
 }

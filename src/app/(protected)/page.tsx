@@ -16,6 +16,10 @@ interface Project {
   name: string;
   slug: string;
   created_at: string;
+  logs_count?: number;
+  goals_count?: number;
+  reviews_count?: number;
+  updates_count?: number;
 }
 
 export default function Dashboard() {
@@ -35,7 +39,40 @@ export default function Dashboard() {
       const res = await fetch("/api/projects");
       if (!res.ok) throw new Error("Failed to fetch projects");
       const data = await res.json();
-      setProjects(data.projects || []);
+      
+      // Fetch counts for each project
+      const projectsWithCounts = await Promise.all(
+        (data.projects || []).map(async (project: Project) => {
+          try {
+            // Fetch logs count
+            const logsRes = await fetch(`/api/logs?projectId=${project.id}`);
+            const logsData = logsRes.ok ? await logsRes.json() : { logs: [] };
+            
+            // Fetch goals count
+            const goalsRes = await fetch(`/api/goals?projectId=${project.id}`);
+            const goalsData = goalsRes.ok ? await goalsRes.json() : { goals: [] };
+            
+            return {
+              ...project,
+              logs_count: logsData.logs?.length || 0,
+              goals_count: goalsData.goals?.length || 0,
+              reviews_count: 0, // TODO: implement when reviews API is ready
+              updates_count: 0, // TODO: implement when updates API is ready
+            };
+          } catch (error) {
+            console.error(`Error fetching counts for project ${project.id}:`, error);
+            return {
+              ...project,
+              logs_count: 0,
+              goals_count: 0,
+              reviews_count: 0,
+              updates_count: 0,
+            };
+          }
+        })
+      );
+      
+      setProjects(projectsWithCounts);
     } catch (err: any) {
       toast.error(err.message || "Failed to load projects");
     } finally {
@@ -215,19 +252,19 @@ export default function Dashboard() {
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-blue-500" />
-                          <span>0 logs</span>
+                          <span>{project.logs_count || 0} logs</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Target className="w-4 h-4 text-green-500" />
-                          <span>0 goals</span>
+                          <span>{project.goals_count || 0} goals</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <FileText className="w-4 h-4 text-purple-500" />
-                          <span>0 reviews</span>
+                          <span>{project.reviews_count || 0} reviews</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <TrendingUp className="w-4 h-4 text-orange-500" />
-                          <span>0 updates</span>
+                          <span>{project.updates_count || 0} updates</span>
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2 mt-4">
