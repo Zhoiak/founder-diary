@@ -52,11 +52,15 @@ export default function Dashboard() {
             const goalsRes = await fetch(`/api/goals?projectId=${project.id}`);
             const goalsData = goalsRes.ok ? await goalsRes.json() : { goals: [] };
             
+            // Fetch weekly reviews count
+            const reviewsRes = await fetch(`/api/weekly?projectId=${project.id}`);
+            const reviewsData = reviewsRes.ok ? await reviewsRes.json() : { reviews: [] };
+            
             return {
               ...project,
               logs_count: logsData.logs?.length || 0,
               goals_count: goalsData.goals?.length || 0,
-              reviews_count: 0, // TODO: implement when reviews API is ready
+              reviews_count: reviewsData.reviews?.length || 0,
               updates_count: 0, // TODO: implement when updates API is ready
             };
           } catch (error) {
@@ -210,10 +214,22 @@ export default function Dashboard() {
                 </Card>
               </Link>
               
+              <Link href="/weekly">
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardContent className="flex items-center p-6">
+                    <FileText className="w-8 h-8 text-purple-500 mr-4" />
+                    <div>
+                      <h3 className="font-semibold">Weekly Reviews</h3>
+                      <p className="text-sm text-gray-600">Weekly summaries</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              
               <Link href="/analytics">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                   <CardContent className="flex items-center p-6">
-                    <BarChart3 className="w-8 h-8 text-purple-500 mr-4" />
+                    <BarChart3 className="w-8 h-8 text-orange-500 mr-4" />
                     <div>
                       <h3 className="font-semibold">Analytics</h3>
                       <p className="text-sm text-gray-600">View insights</p>
@@ -221,16 +237,6 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </Link>
-              
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardContent className="flex items-center p-6">
-                  <TrendingUp className="w-8 h-8 text-orange-500 mr-4" />
-                  <div>
-                    <h3 className="font-semibold">Updates</h3>
-                    <p className="text-sm text-gray-600">Investor reports</p>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
             {/* Projects */}

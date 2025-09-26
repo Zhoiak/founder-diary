@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
-import { Calendar, Clock, Target, TrendingUp, Smile, Tag } from "lucide-react";
+import { Calendar, Clock, Target, TrendingUp, Smile, Tag, ArrowLeft, FileText } from "lucide-react";
+import Link from "next/link";
 
 interface Project {
   id: string;
@@ -14,6 +16,7 @@ interface Project {
 interface AnalyticsData {
   totalLogs: number;
   totalGoals: number;
+  totalReviews: number;
   avgMood: number;
   totalTimeSpent: number;
   currentStreak: number;
@@ -62,21 +65,24 @@ export default function AnalyticsPage() {
     if (!selectedProject) return;
     
     try {
-      // Fetch logs and goals data
-      const [logsRes, goalsRes] = await Promise.all([
+      // Fetch logs, goals, and weekly reviews data
+      const [logsRes, goalsRes, reviewsRes] = await Promise.all([
         fetch(`/api/logs?projectId=${selectedProject}`),
-        fetch(`/api/goals?projectId=${selectedProject}`)
+        fetch(`/api/goals?projectId=${selectedProject}`),
+        fetch(`/api/weekly?projectId=${selectedProject}`)
       ]);
 
       if (!logsRes.ok || !goalsRes.ok) throw new Error("Failed to fetch data");
 
-      const [logsData, goalsData] = await Promise.all([
+      const [logsData, goalsData, reviewsData] = await Promise.all([
         logsRes.json(),
-        goalsRes.json()
+        goalsRes.json(),
+        reviewsRes.ok ? reviewsRes.json() : { reviews: [] }
       ]);
 
       const logs = logsData.logs || [];
       const goals = goalsData.goals || [];
+      const reviews = reviewsData.reviews || [];
 
       // Calculate analytics
       const totalLogs = logs.length;
@@ -173,6 +179,7 @@ export default function AnalyticsPage() {
       setAnalytics({
         totalLogs,
         totalGoals,
+        totalReviews: reviews.length,
         avgMood: Math.round(avgMood * 10) / 10,
         totalTimeSpent,
         currentStreak,
@@ -197,7 +204,15 @@ export default function AnalyticsPage() {
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+            <div className="flex items-center gap-4">
+              <Link href="/">
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+              </Link>
+              <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+            </div>
             <Select value={selectedProject} onValueChange={setSelectedProject}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Select project" />
@@ -227,7 +242,7 @@ export default function AnalyticsPage() {
         ) : (
           <div className="space-y-6">
             {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Logs</CardTitle>
@@ -269,6 +284,17 @@ export default function AnalyticsPage() {
                 <CardContent>
                   <div className="text-2xl font-bold">{analytics.avgMood}/5</div>
                   <p className="text-xs text-muted-foreground">{analytics.totalGoals} active goals</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Weekly Reviews</CardTitle>
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{analytics.totalReviews}</div>
+                  <p className="text-xs text-muted-foreground">Reviews generated</p>
                 </CardContent>
               </Card>
             </div>
