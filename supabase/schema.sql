@@ -115,13 +115,12 @@ alter table key_results enable row level security;
 alter table weekly_reviews enable row level security;
 alter table investor_updates enable row level security;
 alter table integration_counters enable row level security;
-
 -- Helper policy: membership exists
 create or replace view user_project_memberships as
   select pm.project_id, pm.user_id, pm.role from project_members pm;
 
 -- Projects policies
-create policy if not exists "projects_read_member"
+create policy "projects_read_member"
   on projects for select
   using (
     exists (
@@ -130,83 +129,60 @@ create policy if not exists "projects_read_member"
     )
   );
 
-create policy if not exists "projects_insert_owner"
+create policy "projects_insert_owner"
   on projects for insert
-  with check (owner = auth.uid());
+  with check (auth.uid() is not null);
 
-create policy if not exists "projects_update_owner"
+create policy "projects_update_owner"
   on projects for update
-  using (owner = auth.uid())
-  with check (owner = auth.uid());
-
-create policy if not exists "projects_delete_owner"
-  on projects for delete
-  using (owner = auth.uid());
-
--- Project members policies (read/insert by owner/admin)
-create policy if not exists "project_members_read_member"
-  on project_members for select
   using (
     exists (
       select 1 from project_members pm
-      where pm.project_id = project_members.project_id and pm.user_id = auth.uid()
+      where pm.project_id = projects.id and pm.user_id = auth.uid() and pm.role = 'owner'
     )
   );
 
-create policy if not exists "project_members_insert_owner"
+-- Project members policies
+create policy "project_members_read_member"
+  on project_members for select
+  using (user_id = auth.uid() or project_id in (
+    select project_id from project_members where user_id = auth.uid()
+  ));
+
+create policy "project_members_insert_owner"
   on project_members for insert
   with check (
     exists (
-      select 1 from projects p
-      where p.id = project_members.project_id and p.owner = auth.uid()
+      select 1 from project_members pm
+      where pm.project_id = project_members.project_id and pm.user_id = auth.uid() and pm.role = 'owner'
+    ) or not exists (
+      select 1 from project_members pm where pm.project_id = project_members.project_id
     )
   );
 
-create policy if not exists "project_members_delete_owner"
-  on project_members for delete
+-- Daily logs policies
+create policy "daily_logs_crud_member"
+  on daily_logs for all
   using (
     exists (
-      select 1 from projects p
-      where p.id = project_members.project_id and p.owner = auth.uid()
-    )
-  );
-
--- Child tables policies: user must be member and row.user_id = auth.uid()
-create policy if not exists "daily_logs_crud_self_member"
-  on daily_logs
-  for all
-  using (
-    user_id = auth.uid() and exists (
-      select 1 from project_members pm
-      where pm.project_id = daily_logs.project_id and pm.user_id = auth.uid()
-    )
-  )
-  with check (
-    user_id = auth.uid() and exists (
       select 1 from project_members pm
       where pm.project_id = daily_logs.project_id and pm.user_id = auth.uid()
     )
   );
 
-create policy if not exists "goals_crud_self_member"
-  on goals
-  for all
+-- Goals policies
+create policy "goals_crud_member"
+  on goals for all
   using (
-    user_id = auth.uid() and exists (
-      select 1 from project_members pm
-      where pm.project_id = goals.project_id and pm.user_id = auth.uid()
-    )
-  )
-  with check (
-    user_id = auth.uid() and exists (
+    exists (
       select 1 from project_members pm
       where pm.project_id = goals.project_id and pm.user_id = auth.uid()
     )
   );
 
--- key_results: allow select where member; updates only if goal owned by user
-create policy if not exists "key_results_read_member"
-  on key_results for select
+-- Key results policies
+create policy "key_results_crud_member"
+  on key_results for all
   using (
     exists (
       select 1 from goals g
@@ -215,7 +191,41 @@ create policy if not exists "key_results_read_member"
     )
   );
 
-create policy if not exists "key_results_update_goal_owner"
+-- Weekly reviews policies
+create policy "weekly_reviews_crud_member"
+  on weekly_reviews for all
+  using (
+    exists (
+      select 1 from project_members pm
+      where pm.project_id = weekly_reviews.project_id and pm.user_id = auth.uid()
+    )
+  );
+
+-- Investor updates policies
+create policy "investor_updates_crud_member"
+  on investor_updates for all
+  using (
+    exists (
+      select 1 from project_members pm
+      where pm.project_id = investor_updates.project_id and pm.user_id = auth.uid()
+    )
+  );
+
+create policy "investor_updates_read_public"
+  on investor_updates for select
+  using (is_public = true);
+
+-- Integration counters policies
+create policy "integration_counters_crud_member"
+  on integration_counters for all
+  using (
+    exists (
+      select 1 from project_members pm
+      where pm.project_id = integration_counters.project_id and pm.user_id = auth.uid()
+    )
+  );
+
+create policy "key_results_update_goal_owner"
   on key_results for update
   using (
     exists (
@@ -230,7 +240,7 @@ create policy if not exists "key_results_update_goal_owner"
     )
   );
 
-create policy if not exists "weekly_reviews_crud_self_member"
+create policy "weekly_reviews_crud_self_member"
   on weekly_reviews
   for all
   using (
@@ -246,7 +256,7 @@ create policy if not exists "weekly_reviews_crud_self_member"
     )
   );
 
-create policy if not exists "investor_updates_crud_self_member"
+create policy "investor_updates_crud_self_member"
   on investor_updates
   for all
   using (
@@ -263,7 +273,7 @@ create policy if not exists "investor_updates_crud_self_member"
   );
 
 -- Public read policy for investor updates when is_public=true and slug matches
-create policy if not exists "investor_updates_public_read"
+create policy "investor_updates_public_read"
   on investor_updates for select
   using (
     is_public = true

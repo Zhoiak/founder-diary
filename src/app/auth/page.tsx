@@ -8,6 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 
+// Disable static generation for this page
+export const dynamic = 'force-dynamic';
+
 export default function AuthPage() {
   const supabase = createClient();
   const [email, setEmail] = useState("");
