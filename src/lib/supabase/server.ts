@@ -35,7 +35,20 @@ export async function createServerSupabase() {
 }
 
 export async function getSession() {
-  const supabase = await createServerSupabase();
-  const { data } = await supabase.auth.getSession();
-  return data.session;
+  try {
+    const supabase = await createServerSupabase();
+    const { data, error } = await supabase.auth.getSession();
+    
+    console.log("Server getSession - error:", error);
+    console.log("Server getSession - session exists:", data.session ? "yes" : "no");
+    if (data.session) {
+      console.log("Server getSession - user id:", data.session.user.id);
+      console.log("Server getSession - user email:", data.session.user.email);
+    }
+    
+    return data.session;
+  } catch (error) {
+    console.error("Error in getSession:", error);
+    return null;
+  }
 }
