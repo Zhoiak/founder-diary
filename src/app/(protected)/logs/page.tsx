@@ -9,9 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Calendar, Tag, Clock, Smile, ArrowLeft, Edit, Trash2 } from "lucide-react";
+import { Plus, Calendar, Tag, Clock, Smile, ArrowLeft, Edit, Trash2, BookOpen, Lightbulb } from "lucide-react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
+import { TemplateSelector } from "@/components/template-selector";
+import { Template } from "@/lib/templates";
 
 interface DailyLog {
   id: string;
@@ -97,6 +99,18 @@ export default function LogsPage() {
     });
     setEditingLog(null);
     setPreviewMode(false);
+  };
+
+  const handleTemplateSelect = (template: Template) => {
+    setFormData({
+      title: template.content.title || "",
+      content_md: template.content.content_md || "",
+      tags: template.content.tags?.join(", ") || "",
+      mood: template.content.mood?.toString() || "",
+      time_spent_minutes: "",
+      date: new Date().toISOString().split("T")[0],
+    });
+    setDialogOpen(true);
   };
 
   const openEditDialog = (log: DailyLog) => {
@@ -211,16 +225,27 @@ export default function LogsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Dialog open={dialogOpen} onOpenChange={(open) => {
-                setDialogOpen(open);
-                if (!open) resetForm();
-              }}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="w-4 h-4 mr-2" />
-                    New Log
-                  </Button>
-                </DialogTrigger>
+              <div className="flex gap-2">
+                <TemplateSelector 
+                  category="log" 
+                  onSelectTemplate={handleTemplateSelect}
+                  trigger={
+                    <Button variant="outline" size="sm">
+                      <Lightbulb className="w-4 h-4 mr-2" />
+                      Template
+                    </Button>
+                  }
+                />
+                <Dialog open={dialogOpen} onOpenChange={(open) => {
+                  setDialogOpen(open);
+                  if (!open) resetForm();
+                }}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="w-4 h-4 mr-2" />
+                      New Log
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>{editingLog ? "Edit Log" : "Create New Log"}</DialogTitle>
@@ -321,6 +346,7 @@ export default function LogsPage() {
                   </form>
                 </DialogContent>
               </Dialog>
+              </div>
             </div>
           </div>
         </div>
@@ -335,20 +361,52 @@ export default function LogsPage() {
             </CardHeader>
           </Card>
         ) : logs.length === 0 ? (
-          <Card className="text-center py-12">
-            <CardHeader>
-              <CardTitle>No Logs Yet</CardTitle>
-              <CardDescription>Start your founder journey by creating your first daily log</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="lg">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Your First Log
-                  </Button>
-                </DialogTrigger>
-              </Dialog>
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <BookOpen className="w-12 h-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No Logs Yet</h3>
+              <p className="text-gray-600 text-center mb-4">
+                Start documenting your founder journey. Choose a template or create from scratch.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <TemplateSelector 
+                  category="log" 
+                  onSelectTemplate={handleTemplateSelect}
+                  trigger={
+                    <Button variant="outline">
+                      <Lightbulb className="w-4 h-4 mr-2" />
+                      Use Template
+                    </Button>
+                  }
+                />
+                <Button onClick={() => setDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Start from Scratch
+                </Button>
+              </div>
+              
+              {/* Quick Start Tips */}
+              <div className="mt-8 max-w-md">
+                <h4 className="text-sm font-medium text-gray-900 mb-3">💡 Quick Start Tips</h4>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex items-start gap-2">
+                    <span className="text-blue-500">•</span>
+                    <span>Log daily progress, even just 2-3 sentences</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-green-500">•</span>
+                    <span>Track your mood and time spent</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-purple-500">•</span>
+                    <span>Use tags to categorize your work</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-orange-500">•</span>
+                    <span>Document customer feedback and insights</span>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         ) : (

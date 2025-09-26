@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Calendar, Target, FileText, TrendingUp, BarChart3, BookOpen } from "lucide-react";
+import { Plus, BookOpen, Target, BarChart3, TrendingUp, FileText, Command, Keyboard, Calendar } from "lucide-react";
 import Link from "next/link";
 
 interface Project {
@@ -134,16 +135,22 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center py-6">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Dashboard</h2>
-            <p className="text-gray-600 mt-2">Manage your projects and track your founder journey</p>
+            <h1 className="text-3xl font-bold text-gray-900">Welcome back!</h1>
+            <p className="text-gray-600 mt-1">Track your founder journey and make progress every day.</p>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 text-sm text-gray-500">
+            <Keyboard className="w-4 h-4" />
+            <span>Press</span>
+            <Badge variant="outline" className="font-mono">⌘K</Badge>
+            <span>for quick actions</span>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 mr-2" />
-                New Project
+                Create New Project
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -209,7 +216,7 @@ export default function Dashboard() {
         ) : (
           <div className="space-y-8">
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
               <Link href="/logs">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                   <CardContent className="flex items-center p-6">
@@ -264,6 +271,18 @@ export default function Dashboard() {
                     <div>
                       <h3 className="font-semibold">Decisions</h3>
                       <p className="text-sm text-gray-600">Architecture decisions</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+              
+              <Link href="/investor-updates">
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardContent className="flex items-center p-6">
+                    <TrendingUp className="w-8 h-8 text-emerald-500 mr-4" />
+                    <div>
+                      <h3 className="font-semibold">Investor Updates</h3>
+                      <p className="text-sm text-gray-600">Monthly reports</p>
                     </div>
                   </CardContent>
                 </Card>

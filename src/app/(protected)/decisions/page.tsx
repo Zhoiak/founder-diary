@@ -10,9 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, ArrowLeft, FileText, CheckCircle, Clock, XCircle, Edit, Trash2 } from "lucide-react";
+import { Plus, ArrowLeft, FileText, CheckCircle, Clock, XCircle, Edit, Trash2, Lightbulb } from "lucide-react";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
+import { TemplateSelector } from "@/components/template-selector";
+import { Template } from "@/lib/templates";
 
 interface Decision {
   id: string;
@@ -110,6 +112,17 @@ export default function DecisionsPage() {
       decision_md: "",
       consequences_md: "",
     });
+  };
+
+  const handleTemplateSelect = (template: Template) => {
+    setFormData({
+      title: template.content.title || "",
+      context_md: template.content.context_md || "",
+      options_md: template.content.options_md || "",
+      decision_md: template.content.decision_md || "",
+      consequences_md: template.content.consequences_md || "",
+    });
+    setDialogOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -349,12 +362,47 @@ export default function DecisionsPage() {
               <FileText className="w-12 h-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No Decisions Yet</h3>
               <p className="text-gray-600 text-center mb-4">
-                Start documenting your architectural decisions to track important choices and their rationale.
+                Document important architectural and business decisions. Use templates for structured decision records.
               </p>
-              <Button onClick={() => setDialogOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create First Decision
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <TemplateSelector 
+                  category="decision" 
+                  onSelectTemplate={handleTemplateSelect}
+                  trigger={
+                    <Button variant="outline">
+                      <Lightbulb className="w-4 h-4 mr-2" />
+                      Use Template
+                    </Button>
+                  }
+                />
+                <Button onClick={() => setDialogOpen(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Start from Scratch
+                </Button>
+              </div>
+              
+              {/* ADR Benefits */}
+              <div className="mt-8 max-w-md">
+                <h4 className="text-sm font-medium text-gray-900 mb-3">🎯 Why Document Decisions?</h4>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex items-start gap-2">
+                    <span className="text-blue-500">•</span>
+                    <span>Track the reasoning behind important choices</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-green-500">•</span>
+                    <span>Help future team members understand context</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-purple-500">•</span>
+                    <span>Avoid repeating the same discussions</span>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-orange-500">•</span>
+                    <span>Learn from past decisions and outcomes</span>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         ) : (
