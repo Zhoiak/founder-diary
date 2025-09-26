@@ -3,10 +3,11 @@ import { createServerSupabase } from "@/lib/supabase/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    console.log("Fetching public investor update:", params.slug);
+    const { slug } = await params;
+    console.log("Fetching public investor update:", slug);
     const supabase = await createServerSupabase();
 
     // Fetch the public update with project info
@@ -16,7 +17,7 @@ export async function GET(
         *,
         projects!inner(name, slug)
       `)
-      .eq("public_slug", params.slug)
+      .eq("public_slug", slug)
       .eq("is_public", true)
       .single();
 

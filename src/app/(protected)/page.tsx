@@ -30,54 +30,46 @@ export default function Dashboard() {
   const [creating, setCreating] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-
   useEffect(() => {
-    fetchProjects();
+    fetchProjectsWithStats();
   }, []);
 
-  const fetchProjects = async () => {
+  const fetchProjectsWithStats = async () => {
     try {
       const res = await fetch("/api/projects");
       if (!res.ok) throw new Error("Failed to fetch projects");
       const data = await res.json();
       
-      // Fetch counts for each project
-      const projectsWithCounts = await Promise.all(
-        (data.projects || []).map(async (project: Project) => {
-          try {
-            // Fetch logs count
-            const logsRes = await fetch(`/api/logs?projectId=${project.id}`);
-            const logsData = logsRes.ok ? await logsRes.json() : { logs: [] };
-            
-            // Fetch goals count
-            const goalsRes = await fetch(`/api/goals?projectId=${project.id}`);
-            const goalsData = goalsRes.ok ? await goalsRes.json() : { goals: [] };
-            
-            // Fetch weekly reviews count
-            const reviewsRes = await fetch(`/api/weekly?projectId=${project.id}`);
-            const reviewsData = reviewsRes.ok ? await reviewsRes.json() : { reviews: [] };
-            
-            return {
-              ...project,
-              logs_count: logsData.logs?.length || 0,
-              goals_count: goalsData.goals?.length || 0,
-              reviews_count: reviewsData.reviews?.length || 0,
-              updates_count: 0, // TODO: implement when updates API is ready
-            };
-          } catch (error) {
-            console.error(`Error fetching counts for project ${project.id}:`, error);
-            return {
-              ...project,
-              logs_count: 0,
-              goals_count: 0,
-              reviews_count: 0,
-              updates_count: 0,
-            };
-          }
+      // Fetch stats for each project
+      const projectsWithStats = await Promise.all(
+        data.projects.map(async (project: Project) => {
+          // Fetch logs count
+          const logsRes = await fetch(`/api/logs?projectId=${project.id}`);
+          const logsData = logsRes.ok ? await logsRes.json() : { logs: [] };
+          
+          // Fetch goals count
+          const goalsRes = await fetch(`/api/goals?projectId=${project.id}`);
+          const goalsData = goalsRes.ok ? await goalsRes.json() : { goals: [] };
+          
+          // Fetch weekly reviews count
+          const reviewsRes = await fetch(`/api/weekly?projectId=${project.id}`);
+          const reviewsData = reviewsRes.ok ? await reviewsRes.json() : { reviews: [] };
+
+          // Fetch investor updates count
+          const updatesRes = await fetch(`/api/investor-updates?projectId=${project.id}`);
+          const updatesData = updatesRes.ok ? await updatesRes.json() : { updates: [] };
+
+          return {
+            ...project,
+            logs_count: logsData.logs?.length || 0,
+            goals_count: goalsData.goals?.length || 0,
+            reviews_count: reviewsData.reviews?.length || 0,
+            updates_count: updatesData.updates?.length || 0,
+          };
         })
       );
       
-      setProjects(projectsWithCounts);
+      setProjects(projectsWithStats);
     } catch (err: any) {
       toast.error(err.message || "Failed to load projects");
     } finally {

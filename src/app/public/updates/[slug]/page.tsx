@@ -26,18 +26,29 @@ const monthNames = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-export default function PublicUpdatePage({ params }: { params: { slug: string } }) {
+export default function PublicUpdatePage({ params }: { params: Promise<{ slug: string }> }) {
   const [update, setUpdate] = useState<PublicUpdate | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [slug, setSlug] = useState<string>("");
 
   useEffect(() => {
-    fetchUpdate();
-  }, [params.slug]);
+    const getSlug = async () => {
+      const { slug: paramSlug } = await params;
+      setSlug(paramSlug);
+    };
+    getSlug();
+  }, [params]);
+
+  useEffect(() => {
+    if (slug) {
+      fetchUpdate();
+    }
+  }, [slug]);
 
   const fetchUpdate = async () => {
     try {
-      const res = await fetch(`/api/public/updates/${params.slug}`);
+      const res = await fetch(`/api/public/updates/${slug}`);
       if (!res.ok) {
         if (res.status === 404) {
           setError("Update not found or not publicly accessible");

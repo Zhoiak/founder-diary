@@ -9,19 +9,20 @@ const UpdateInvestorUpdateSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-    console.log("Fetching investor update:", params.id);
+    const { id } = await params;
+    console.log("Fetching investor update:", id);
     const supabase = await createServerSupabase();
 
     const { data: update, error } = await supabase
       .from("investor_updates")
       .select("*")
-      .eq("id", params.id)
+      .eq("id", id)
       .single();
 
     if (error || !update) {
@@ -52,13 +53,14 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-    console.log("Updating investor update:", params.id, "for user:", session.user.id);
+    const { id } = await params;
+    console.log("Updating investor update:", id, "for user:", session.user.id);
     
     const body = await req.json().catch(() => ({}));
     console.log("Update request body:", body);
@@ -75,7 +77,7 @@ export async function PATCH(
     const { data: update, error: updateError } = await supabase
       .from("investor_updates")
       .select("*, project_id")
-      .eq("id", params.id)
+      .eq("id", id)
       .single();
 
     if (updateError || !update) {
@@ -100,7 +102,7 @@ export async function PATCH(
     const { data: updatedUpdate, error: updateUpdateError } = await supabase
       .from("investor_updates")
       .update(parse.data)
-      .eq("id", params.id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -120,13 +122,14 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-    console.log("Deleting investor update:", params.id, "for user:", session.user.id);
+    const { id } = await params;
+    console.log("Deleting investor update:", id, "for user:", session.user.id);
     
     const supabase = await createServerSupabase();
 
@@ -134,7 +137,7 @@ export async function DELETE(
     const { data: update, error: updateError } = await supabase
       .from("investor_updates")
       .select("*, project_id")
-      .eq("id", params.id)
+      .eq("id", id)
       .single();
 
     if (updateError || !update) {
@@ -159,7 +162,7 @@ export async function DELETE(
     const { error: deleteError } = await supabase
       .from("investor_updates")
       .delete()
-      .eq("id", params.id);
+      .eq("id", id);
 
     if (deleteError) {
       console.error("Update deletion error:", deleteError);
