@@ -56,61 +56,86 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getSession();
-  if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  try {
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
 
-  const body = await req.json().catch(() => ({}));
-  const parse = CreateGoalSchema.safeParse(body);
-  if (!parse.success) {
-    return NextResponse.json({ error: parse.error.flatten() }, { status: 400 });
+    console.log("Creating goal for user:", session.user.id);
+    
+    const body = await req.json().catch(() => ({}));
+    console.log("Goal request body:", body);
+    
+    const parse = CreateGoalSchema.safeParse(body);
+    if (!parse.success) {
+      console.log("Goal validation error:", parse.error.flatten());
+      return NextResponse.json({ error: parse.error.flatten() }, { status: 400 });
+    }
+    
+    console.log("Goal validation passed:", parse.data);
+
+    const supabase = await createServerSupabase();
+
+    // Verify user has access to this project
+    const { data: membership } = await supabase
+      .from("project_members")
+      .select("role")
+      .eq("project_id", parse.data.projectId)
+      .eq("user_id", session.user.id)
+      .single();
+
+    if (!membership) {
+      console.log("Access denied - no membership found");
+      return NextResponse.json({ error: "access denied" }, { status: 403 });
+    }
+
+    console.log("Creating goal in database");
+    
+    // Create the goal
+    const { data: goal, error: goalError } = await supabase
+      .from("goals")
+      .insert({
+        project_id: parse.data.projectId,
+        user_id: session.user.id,
+        objective: parse.data.objective,
+        due_date: parse.data.due_date,
+      })
+      .select()
+      .single();
+
+    if (goalError) {
+      console.error("Goal creation error:", goalError);
+      return NextResponse.json({ error: goalError.message }, { status: 400 });
+    }
+
+    console.log("Goal created:", goal);
+
+    // Create key results if provided
+    if (parse.data.key_results.length > 0) {
+      const keyResultsData = parse.data.key_results.map((kr: any) => ({
+        goal_id: goal.id,
+        name: kr.name,
+        target: kr.target,
+        unit: kr.unit,
+      }));
+
+      const { data: keyResults, error: krError } = await supabase
+        .from("key_results")
+        .insert(keyResultsData)
+        .select();
+
+      if (krError) {
+        console.error("Key results creation error:", krError);
+        return NextResponse.json({ error: krError.message }, { status: 400 });
+      }
+
+      console.log("Key results created:", keyResults);
+      return NextResponse.json({ goal: { ...goal, key_results: keyResults } }, { status: 201 });
+    }
+
+    return NextResponse.json({ goal: { ...goal, key_results: [] } }, { status: 201 });
+    
+  } catch (error) {
+    console.error("Error in POST /api/goals:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-
-  const supabase = await createServerSupabase();
-
-  // Verify user has access to this project
-  const { data: membership } = await supabase
-    .from("project_members")
-    .select("role")
-    .eq("project_id", parse.data.projectId)
-    .eq("user_id", session.user.id)
-    .single();
-
-  if (!membership) {
-    return NextResponse.json({ error: "access denied" }, { status: 403 });
-  }
-
-  // Create the goal
-  const { data: goal, error: goalError } = await supabase
-    .from("goals")
-    .insert({
-      project_id: parse.data.projectId,
-      user_id: session.user.id,
-      objective: parse.data.objective,
-      due_date: parse.data.due_date,
-    })
-    .select()
-    .single();
-
-  if (goalError) return NextResponse.json({ error: goalError.message }, { status: 400 });
-
-  // Create key results if provided
-  if (parse.data.key_results.length > 0) {
-    const keyResultsData = parse.data.key_results.map((kr) => ({
-      goal_id: goal.id,
-      name: kr.name,
-      target: kr.target,
-      unit: kr.unit,
-    }));
-
-    const { data: keyResults, error: krError } = await supabase
-      .from("key_results")
-      .insert(keyResultsData)
-      .select();
-
-    if (krError) return NextResponse.json({ error: krError.message }, { status: 400 });
-
-    return NextResponse.json({ goal: { ...goal, key_results: keyResults } }, { status: 201 });
-  }
-
-  return NextResponse.json({ goal: { ...goal, key_results: [] } }, { status: 201 });
 }
