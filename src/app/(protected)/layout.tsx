@@ -9,9 +9,19 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
-  if (!session) {
+  try {
+    const session = await getSession();
+    console.log("Protected layout - session:", session ? "exists" : "null");
+    
+    if (!session) {
+      console.log("No session found, redirecting to /auth");
+      redirect("/auth");
+    }
+    
+    console.log("Session found, showing protected content");
+    return <>{children}</>;
+  } catch (error) {
+    console.error("Error in protected layout:", error);
     redirect("/auth");
   }
-  return <>{children}</>;
 }

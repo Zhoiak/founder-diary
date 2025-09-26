@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,21 @@ export default function AuthPage() {
   const supabase = createClient();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Check if user is already authenticated
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Auth page - current session:", session ? "exists" : "null");
+      
+      if (session) {
+        console.log("User already authenticated, should redirect to dashboard");
+        window.location.href = "/";
+      }
+    };
+    
+    checkAuth();
+  }, [supabase]);
 
   const signInWithMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
