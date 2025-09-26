@@ -18,19 +18,32 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
 
-  // Check if user is already authenticated
+  // Check if user is already authenticated and listen for auth changes
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       console.log("Auth page - current session:", session ? "exists" : "null");
       
       if (session) {
-        console.log("User already authenticated, should redirect to dashboard");
+        console.log("User already authenticated, redirecting to dashboard");
         window.location.href = "/";
       }
     };
     
     checkAuth();
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session ? "session exists" : "no session");
+      
+      if (event === 'SIGNED_IN' && session) {
+        console.log("User signed in, redirecting to dashboard");
+        toast.success("Successfully signed in!");
+        window.location.href = "/";
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [supabase]);
 
   const signInWithPassword = async (e: React.FormEvent) => {
@@ -62,9 +75,14 @@ export default function AuthPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: `${window.location.origin}` } });
+      const { error } = await supabase.auth.signInWithOtp({ 
+        email, 
+        options: { 
+          emailRedirectTo: `${window.location.origin}/auth/callback` 
+        } 
+      });
       if (error) throw error;
-      toast("Magic link sent! Check your inbox.");
+      toast("Magic link sent! Check your inbox and click the link.");
     } catch (err: any) {
       toast.error(err.message || "Failed to send magic link");
     } finally {
@@ -75,7 +93,12 @@ export default function AuthPage() {
   const signInOAuth = async (provider: "google" | "github") => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: `${window.location.origin}` } });
+      const { error } = await supabase.auth.signInWithOAuth({ 
+        provider, 
+        options: { 
+          redirectTo: `${window.location.origin}/auth/callback` 
+        } 
+      });
       if (error) throw error;
     } catch (err: any) {
       toast.error(err.message || "OAuth sign-in failed");
