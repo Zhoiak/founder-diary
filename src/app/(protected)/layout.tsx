@@ -32,6 +32,26 @@ export default function ProtectedLayout({
       
       console.log("Session found, showing protected content");
       setUser(session.user);
+      
+      // Ensure Personal project exists for this user
+      try {
+        const response = await fetch("/api/user/ensure-personal", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Personal project ensured:", data.message);
+        } else {
+          console.warn("Failed to ensure Personal project");
+        }
+      } catch (error) {
+        console.error("Error ensuring Personal project:", error);
+      }
+      
       setLoading(false);
     };
 

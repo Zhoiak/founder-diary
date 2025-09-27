@@ -9,27 +9,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, BookOpen, Target, BarChart3, TrendingUp, FileText, Command, Keyboard, Calendar, Heart, Zap, Users, GraduationCap } from "lucide-react";
+import { Plus, BookOpen, Target, BarChart3, TrendingUp, FileText, Command, Keyboard, Calendar, Heart, Zap, Users, GraduationCap, Settings, Briefcase } from "lucide-react";
 import Link from "next/link";
-
-interface Project {
-  id: string;
-  name: string;
-  slug: string;
-  created_at: string;
-  logs_count?: number;
-  goals_count?: number;
-  reviews_count?: number;
-  updates_count?: number;
-}
+import { ModeSelector } from "@/components/mode-selector";
+import { OnboardingWizard } from "@/components/onboarding-wizard";
+import { useFeatureFlags } from "@/hooks/use-feature-flags";
+import { type Project, type ProjectWithStats } from "@/types/project";
 
 export default function Dashboard() {
   const supabase = createClient();
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<ProjectWithStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentMode, setCurrentMode] = useState<'founder' | 'personal'>('founder');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingChecked, setOnboardingChecked] = useState(false);
   useEffect(() => {
     fetchProjectsWithStats();
   }, []);
@@ -105,6 +102,44 @@ export default function Dashboard() {
     window.location.href = "/auth";
   };
 
+  const checkOnboardingNeeded = async (mode: 'founder' | 'personal', project: Project | null) => {
+    if (mode !== 'personal' || !project || onboardingChecked) return;
+    
+    try {
+      // Check if user has completed onboarding
+      const { data: { user } } = await supabase.auth.getUser();
+      const hasCompletedOnboarding = user?.user_metadata?.onboarding_completed;
+      
+      if (!hasCompletedOnboarding && project.name === 'Personal') {
+        // Check if user has any personal entries, habits, or routine runs
+        const [entriesRes, habitsRes] = await Promise.all([
+          fetch(`/api/personal-entries?projectId=${project.id}`),
+          fetch(`/api/habits?projectId=${project.id}`)
+        ]);
+        
+        const entriesData = entriesRes.ok ? await entriesRes.json() : { entries: [] };
+        const habitsData = habitsRes.ok ? await habitsRes.json() : { habits: [] };
+        
+        const hasContent = (entriesData.entries?.length > 0) || (habitsData.habits?.length > 0);
+        
+        if (!hasContent) {
+          setShowOnboarding(true);
+        }
+      }
+      
+      setOnboardingChecked(true);
+    } catch (error) {
+      console.error("Error checking onboarding status:", error);
+      setOnboardingChecked(true);
+    }
+  };
+
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    // Refresh the page to show the new content
+    window.location.reload();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -118,10 +153,27 @@ export default function Dashboard() {
       <header className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <h1 className="text-2xl font-bold text-gray-900">Founder Diary</h1>
-            <Button variant="outline" onClick={signOut}>
-              Sign Out
-            </Button>
+            <div className="flex items-center gap-6">
+              <h1 className="text-2xl font-bold text-gray-900">Founder Diary</h1>
+              <ModeSelector 
+                onModeChange={(mode, project) => {
+                  setCurrentMode(mode);
+                  setSelectedProject(project);
+                  checkOnboardingNeeded(mode, project);
+                }}
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <Link href="/settings">
+                <Button variant="ghost" size="sm">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </Button>
+              </Link>
+              <Button variant="outline" onClick={signOut}>
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -348,7 +400,7 @@ export default function Dashboard() {
                       <CardTitle className="flex items-center justify-between">
                         {project.name}
                         <span className="text-xs text-gray-500">
-                          {new Date(project.created_at).toLocaleDateString()}
+                          {project.created_at ? new Date(project.created_at).toLocaleDateString() : 'N/A'}
                         </span>
                       </CardTitle>
                       <CardDescription>/{project.slug}</CardDescription>
@@ -392,6 +444,16 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+
+      {/* Onboarding Wizard */}
+      {showOnboarding && selectedProject && (
+        <OnboardingWizard
+          open={showOnboarding}
+          onComplete={handleOnboardingComplete}
+          onClose={() => setShowOnboarding(false)}
+          projectId={selectedProject.id}
+        />
+      )}
     </div>
   );
 }
