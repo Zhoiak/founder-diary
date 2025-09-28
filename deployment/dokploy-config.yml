@@ -1,0 +1,70 @@
+# Configuración Docker Compose para Dokploy
+# Optimizado para Founder Diary
+
+version: '3.8'
+
+services:
+  # Aplicación Next.js
+  founder-diary:
+    build:
+      context: .
+      dockerfile: ./deployment/Dockerfile
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://founder_user:${DB_PASSWORD}@postgres:5432/founder_diary
+      - NEXTAUTH_URL=https://${DOMAIN}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.founder-diary.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.founder-diary.tls=true"
+      - "traefik.http.routers.founder-diary.tls.certresolver=letsencrypt"
+      - "traefik.http.services.founder-diary.loadbalancer.server.port=3000"
+
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=founder_diary
+      - POSTGRES_USER=founder_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deployment/postgresql.conf:/etc/postgresql/postgresql.conf
+    restart: unless-stopped
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U founder_user -d founder_diary"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis para caché y sesiones
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: dokploy-network
+    external: true
