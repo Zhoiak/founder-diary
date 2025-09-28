@@ -142,7 +142,7 @@ export default function LearningPage() {
     if (!selectedProject) return;
     
     try {
-      const res = await fetch(`/api/flashcards?projectId=${selectedProject}&due=true`);
+      const res = await fetch(`/api/learning/flashcards?projectId=${selectedProject}&due=true`);
       if (!res.ok) throw new Error("Failed to fetch flashcards");
       const data = await res.json();
       setFlashcards(data.flashcards || []);
@@ -203,7 +203,7 @@ export default function LearningPage() {
     if (!currentCard) return;
 
     try {
-      const res = await fetch(`/api/flashcards/${currentCard.id}/review`, {
+      const res = await fetch(`/api/learning/flashcards/${currentCard.id}/review`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rating }),

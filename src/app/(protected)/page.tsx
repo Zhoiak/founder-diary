@@ -165,6 +165,12 @@ export default function Dashboard() {
               />
             </div>
             <div className="flex items-center gap-3">
+              <Link href="/project-overview">
+                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Project Overview
+                </Button>
+              </Link>
               <Link href="/admin">
                 <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
                   <Shield className="w-4 h-4 mr-2" />
