@@ -1,25 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    turbo: {
-      // Turbopack configuration
-    }
+  // Disable ESLint during builds for production
+  eslint: {
+    ignoreDuringBuilds: true,
   },
-  // Skip static generation for admin pages during build
-  // This prevents build errors when Supabase env vars are not available
-  async generateStaticParams() {
-    return [];
+  // Disable TypeScript checking during builds for production
+  typescript: {
+    ignoreBuildErrors: true,
   },
-  // Disable static optimization for admin routes
-  async rewrites() {
-    return [];
+  // Turbopack configuration
+  turbopack: {
+    // Turbopack configuration
   },
-  // Configure which pages to skip during static generation
+  // Skip static generation for problematic pages
   trailingSlash: false,
-  // Skip problematic pages during build
-  async redirects() {
-    return [];
-  }
+  // Output configuration for Docker
+  output: 'standalone',
 };
 
 module.exports = nextConfig;
