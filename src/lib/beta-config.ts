@@ -157,8 +157,8 @@ export function getUserCohort(userEmail: string): BetaCohort | null {
 }
 
 export function trackBetaEvent(event: string, properties: Record<string, any> = {}) {
-  if (typeof window !== 'undefined' && window.posthog) {
-    window.posthog.capture(event, {
+  if (typeof window !== 'undefined' && (window as any).posthog) {
+    (window as any).posthog.capture(event, {
       ...properties,
       beta_version: '1.0.0',
       timestamp: new Date().toISOString()

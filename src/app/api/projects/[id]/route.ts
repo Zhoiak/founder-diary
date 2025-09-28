@@ -27,15 +27,13 @@ export async function GET(
       return NextResponse.json({ error: "Project not found or access denied" }, { status: 404 });
     }
 
-    // Get project details
+    // Get project details - with fallback for missing Diary+ columns
     const { data: project, error: projectError } = await supabase
       .from('projects')
       .select(`
         id,
         name,
         slug,
-        feature_flags,
-        private_vault,
         created_at,
         updated_at
       `)
@@ -47,9 +45,30 @@ export async function GET(
       return NextResponse.json({ error: projectError.message }, { status: 500 });
     }
 
+    // Check if Diary+ columns exist by trying to fetch them
+    let diaryPlusData = null;
+    try {
+      const { data: diaryData } = await supabase
+        .from('projects')
+        .select('feature_flags, private_vault')
+        .eq('id', id)
+        .single();
+      diaryPlusData = diaryData;
+    } catch (error) {
+      // Diary+ columns don't exist yet, use defaults
+      console.log("Diary+ columns not found, using defaults");
+      diaryPlusData = {
+        feature_flags: {},
+        private_vault: false
+      };
+    }
+
     return NextResponse.json({
       success: true,
-      project
+      project: {
+        ...project,
+        ...diaryPlusData
+      }
     });
 
   } catch (error: any) {
