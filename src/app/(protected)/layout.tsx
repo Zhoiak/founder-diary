@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Toaster } from "sonner";
 import { CommandPalette } from "@/components/command-palette";
 import { useCommandPalette } from "@/hooks/use-command-palette";
+import { PostHogProvider } from "@/providers/posthog-provider";
 
 export default function ProtectedLayout({
   children,
@@ -84,10 +85,10 @@ export default function ProtectedLayout({
   }
 
   return (
-    <>
+    <PostHogProvider>
       {children}
       <CommandPalette open={open} onOpenChange={setOpen} />
       <Toaster />
-    </>
+    </PostHogProvider>
   );
 }

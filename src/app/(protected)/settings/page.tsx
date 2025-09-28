@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ModeSelector } from "@/components/mode-selector";
+import { VaultManager } from "@/components/vault-manager";
 import { useFeatureFlags, type FeatureFlags } from "@/hooks/use-feature-flags";
 import { type Project } from "@/types/project";
 
@@ -288,6 +289,11 @@ export default function SettingsPage() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Privacy & Vault Management */}
+            {currentMode === 'personal' && (
+              <VaultManager projectId={selectedProject.id} />
+            )}
 
             {/* Info Card */}
             <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-indigo-50">
