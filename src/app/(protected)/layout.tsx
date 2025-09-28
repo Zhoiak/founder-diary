@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import { CommandPalette } from "@/components/command-palette";
 import { useCommandPalette } from "@/hooks/use-command-palette";
 import { PostHogProvider } from "@/providers/posthog-provider";
+import FloatingDevNotes from "@/components/dev/FloatingDevNotes";
 
 export default function ProtectedLayout({
   children,
@@ -16,6 +17,8 @@ export default function ProtectedLayout({
 }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userNumber, setUserNumber] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const supabase = createClient();
   const { open, setOpen } = useCommandPalette();
@@ -51,6 +54,22 @@ export default function ProtectedLayout({
         }
       } catch (error) {
         console.error("Error ensuring Personal project:", error);
+      }
+
+      // Check if user is admin/dev (has user number)
+      try {
+        const userRes = await fetch("/api/collaboration/users");
+        if (userRes.ok) {
+          // If user can access collaboration API, they have a user number (admin/dev)
+          setIsAdmin(true);
+          // Get user number for display
+          const userData = await userRes.json();
+          // We'll need to modify the API to return current user info
+          setUserNumber(1234); // Placeholder - will be loaded from API
+        }
+      } catch (error) {
+        console.log("User is not admin/dev");
+        setIsAdmin(false);
       }
       
       setLoading(false);
@@ -88,6 +107,7 @@ export default function ProtectedLayout({
     <PostHogProvider>
       {children}
       <CommandPalette open={open} onOpenChange={setOpen} />
+      <FloatingDevNotes isAdmin={isAdmin} userNumber={userNumber || undefined} />
       <Toaster />
     </PostHogProvider>
   );

@@ -3,13 +3,19 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Plus, BookOpen, Target, BarChart3, TrendingUp, FileText, Command, Keyboard, Calendar, Heart, Zap, Users, GraduationCap, Settings, Briefcase, Shield } from "lucide-react";
+import { 
+  BarChart3, Shield, Settings, Calendar, 
+  BookOpen, Users, MessageSquare, Heart, 
+  Zap, Target, TrendingUp, Award, Flame, 
+  Star, Gift, Camera, Brain, Clock, Activity,
+  User, Plus, Keyboard, Briefcase, FileText
+} from "lucide-react";
 import Link from "next/link";
 import { ModeSelector } from "@/components/mode-selector";
 import { OnboardingWizard } from "@/components/onboarding-wizard";
@@ -165,7 +171,7 @@ export default function Dashboard() {
               />
             </div>
             <div className="flex items-center gap-3">
-              <Link href="/project-overview">
+              <Link href="/project-overview-global">
                 <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50">
                   <BarChart3 className="w-4 h-4 mr-2" />
                   Project Overview
@@ -175,6 +181,12 @@ export default function Dashboard() {
                 <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
                   <Shield className="w-4 h-4 mr-2" />
                   Admin
+                </Button>
+              </Link>
+              <Link href="/profile">
+                <Button variant="ghost" size="sm" className="text-purple-600 hover:text-purple-700 hover:bg-purple-50">
+                  <User className="w-4 h-4 mr-2" />
+                  Profile
                 </Button>
               </Link>
               <Link href="/settings">
