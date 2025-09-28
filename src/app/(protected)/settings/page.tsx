@@ -92,23 +92,58 @@ export default function SettingsPage() {
   const [currentMode, setCurrentMode] = useState<'founder' | 'personal'>('founder');
   const [saving, setSaving] = useState(false);
   const [localFlags, setLocalFlags] = useState<FeatureFlags>({
-    diary_personal: false,
-    habits: false,
-    routines: false,
-    people: false,
-    learning: false,
-    memories: false,
-    insights: false,
-    yearbook: false,
+    // Personal Life OS features
+    diary_personal: true,   // Coincide con defaults de SQL
+    habits: true,           // Coincide con defaults de SQL
+    routines: true,         // Coincide con defaults de SQL
+    people: true,           // Coincide con defaults de SQL
+    learning: true,         // Coincide con defaults de SQL
+    memories: true,         // Coincide con defaults de SQL
+    insights: false,        // Por defecto desactivado
+    yearbook: false,        // Por defecto desactivado
+    
+    // Founder Tools features
+    goals: true,            // Por defecto activado
+    weekly_reviews: true,   // Por defecto activado
+    analytics: true,        // Por defecto activado
+    decisions: true,        // Por defecto activado
+    investor_updates: true, // Por defecto activado
   });
 
   const { flags, loading, updateFlags, project } = useFeatureFlags(selectedProject?.id);
 
+  // Sincronizar localFlags con los flags reales de la base de datos
   useEffect(() => {
-    if (flags) {
+    if (flags && selectedProject) {
+      console.log('Syncing flags from database:', flags);
       setLocalFlags(flags);
     }
-  }, [flags]);
+  }, [flags, selectedProject]);
+
+  // Reset localFlags cuando cambie el proyecto
+  useEffect(() => {
+    if (selectedProject && !flags) {
+      // Resetear a valores por defecto mientras carga (coincide con SQL defaults)
+      setLocalFlags({
+        // Personal Life OS features
+        diary_personal: true,
+        habits: true,
+        routines: true,
+        people: true,
+        learning: true,
+        memories: true,
+        insights: false,
+        yearbook: false,
+        
+        // Founder Tools features
+        goals: true,
+        weekly_reviews: true,
+        analytics: true,
+        decisions: true,
+        investor_updates: true,
+      });
+    }
+  }, [selectedProject]);
 
   const handleFlagChange = (flag: keyof FeatureFlags, enabled: boolean) => {
     setLocalFlags(prev => ({ ...prev, [flag]: enabled }));

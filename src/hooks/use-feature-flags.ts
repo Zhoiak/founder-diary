@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 
 export interface FeatureFlags {
+  // Personal Life OS features
   diary_personal: boolean;
   habits: boolean;
   routines: boolean;
@@ -11,6 +12,13 @@ export interface FeatureFlags {
   memories: boolean;
   insights: boolean;
   yearbook: boolean;
+  
+  // Founder Tools features
+  goals: boolean;
+  weekly_reviews: boolean;
+  analytics: boolean;
+  decisions: boolean;
+  investor_updates: boolean;
 }
 
 export interface Project {
@@ -23,14 +31,22 @@ export interface Project {
 
 export function useFeatureFlags(projectId?: string) {
   const [flags, setFlags] = useState<FeatureFlags>({
-    diary_personal: false,
-    habits: false,
-    routines: false,
-    people: false,
-    learning: false,
-    memories: false,
-    insights: false,
-    yearbook: false,
+    // Personal Life OS features
+    diary_personal: true,   // Coincide con defaults de SQL
+    habits: true,           // Coincide con defaults de SQL
+    routines: true,         // Coincide con defaults de SQL
+    people: true,           // Coincide con defaults de SQL
+    learning: true,         // Coincide con defaults de SQL
+    memories: true,         // Coincide con defaults de SQL
+    insights: false,        // Por defecto desactivado
+    yearbook: false,        // Por defecto desactivado
+    
+    // Founder Tools features
+    goals: true,            // Por defecto activado
+    weekly_reviews: true,   // Por defecto activado
+    analytics: true,        // Por defecto activado
+    decisions: true,        // Por defecto activado
+    investor_updates: true, // Por defecto activado
   });
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,16 +65,32 @@ export function useFeatureFlags(projectId?: string) {
       const projectData = data.project;
       
       setProject(projectData);
-      setFlags(projectData.feature_flags || {
-        diary_personal: false,
-        habits: false,
-        routines: false,
-        people: false,
-        learning: false,
-        memories: false,
-        insights: false,
-        yearbook: false,
-      });
+      
+      // Usar los feature_flags de la base de datos o valores por defecto
+      const dbFlags = projectData.feature_flags || {};
+      const defaultFlags = {
+        // Personal Life OS features
+        diary_personal: true,   // Por defecto activado según SQL
+        habits: true,           // Por defecto activado según SQL
+        routines: true,         // Por defecto activado según SQL
+        people: true,           // Por defecto activado según SQL
+        learning: true,         // Por defecto activado según SQL
+        memories: true,         // Por defecto activado según SQL
+        insights: false,        // Por defecto desactivado
+        yearbook: false,        // Por defecto desactivado
+        
+        // Founder Tools features
+        goals: true,            // Por defecto activado
+        weekly_reviews: true,   // Por defecto activado
+        analytics: true,        // Por defecto activado
+        decisions: true,        // Por defecto activado
+        investor_updates: true, // Por defecto activado
+      };
+      
+      // Combinar flags de DB con defaults
+      const finalFlags = { ...defaultFlags, ...dbFlags };
+      console.log('Setting flags from DB:', finalFlags);
+      setFlags(finalFlags);
     } catch (error) {
       console.error("Error fetching feature flags:", error);
     } finally {

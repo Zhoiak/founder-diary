@@ -13,6 +13,7 @@ import { Plus, BookOpen, Target, BarChart3, TrendingUp, FileText, Command, Keybo
 import Link from "next/link";
 import { ModeSelector } from "@/components/mode-selector";
 import { OnboardingWizard } from "@/components/onboarding-wizard";
+import { DashboardWidgets } from "@/components/dashboard-widgets";
 import { useFeatureFlags } from "@/hooks/use-feature-flags";
 import { type Project, type ProjectWithStats } from "@/types/project";
 
@@ -259,135 +260,25 @@ export default function Dashboard() {
           </Card>
         ) : (
           <div className="space-y-8">
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
-              <Link href="/logs">
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardContent className="flex items-center p-6">
-                    <BookOpen className="w-8 h-8 text-blue-500 mr-4" />
-                    <div>
-                      <p className="text-sm text-gray-600">Record your progress</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-              
-              <Link href="/goals">
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardContent className="flex items-center p-6">
-                    <Target className="w-8 h-8 text-green-500 mr-4" />
-                    <div>
-                      <h3 className="font-semibold">Goals & OKRs</h3>
-                      <p className="text-sm text-gray-600">Track objectives</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-              
-              <Link href="/weekly">
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardContent className="flex items-center p-6">
-                    <FileText className="w-8 h-8 text-purple-500 mr-4" />
-                    <div>
-                      <h3 className="font-semibold">Weekly Reviews</h3>
-                      <p className="text-sm text-gray-600">Weekly summaries</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-              
-              <Link href="/analytics">
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardContent className="flex items-center p-6">
-                    <BarChart3 className="w-8 h-8 text-orange-500 mr-4" />
-                    <div>
-                      <h3 className="font-semibold">Analytics</h3>
-                      <p className="text-sm text-gray-600">View insights</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-              
-              <Link href="/decisions">
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardContent className="flex items-center p-6">
-                    <FileText className="w-8 h-8 text-indigo-500 mr-4" />
-                    <div>
-                      <h3 className="font-semibold">Decisions</h3>
-                      <p className="text-sm text-gray-600">Architecture decisions</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-              
-              <Link href="/investor-updates">
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                  <CardContent className="flex items-center p-6">
-                    <TrendingUp className="w-8 h-8 text-emerald-500 mr-4" />
-                    <div>
-                      <h3 className="font-semibold">Investor Updates</h3>
-                      <p className="text-sm text-gray-600">Monthly reports</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </div>
-
-            {/* Diary+ Personal Modules */}
+            {/* Modern Dashboard Widgets */}
             <div>
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Heart className="w-5 h-5 text-pink-500" />
-                Personal Life OS
+              <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+                {currentMode === 'personal' ? (
+                  <>
+                    <Heart className="w-6 h-6 text-pink-500" />
+                    Personal Life OS
+                  </>
+                ) : (
+                  <>
+                    <Briefcase className="w-6 h-6 text-blue-500" />
+                    Founder Tools
+                  </>
+                )}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Link href="/journal">
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardContent className="flex items-center p-6">
-                      <Heart className="w-8 h-8 text-pink-500 mr-4" />
-                      <div>
-                        <h3 className="font-semibold">Personal Journal</h3>
-                        <p className="text-sm text-gray-600">Daily life & thoughts</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-                
-                <Link href="/habits">
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardContent className="flex items-center p-6">
-                      <Zap className="w-8 h-8 text-yellow-500 mr-4" />
-                      <div>
-                        <h3 className="font-semibold">Habits</h3>
-                        <p className="text-sm text-gray-600">Track daily habits</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-                
-                <Link href="/people">
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardContent className="flex items-center p-6">
-                      <Users className="w-8 h-8 text-blue-500 mr-4" />
-                      <div>
-                        <h3 className="font-semibold">Relationships</h3>
-                        <p className="text-sm text-gray-600">Personal CRM</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-                
-                <Link href="/learning">
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                    <CardContent className="flex items-center p-6">
-                      <GraduationCap className="w-8 h-8 text-purple-500 mr-4" />
-                      <div>
-                        <h3 className="font-semibold">Learning</h3>
-                        <p className="text-sm text-gray-600">Books & flashcards</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </div>
+              <DashboardWidgets 
+                projectId={selectedProject?.id || ''} 
+                mode={currentMode} 
+              />
             </div>
 
             {/* Projects */}
