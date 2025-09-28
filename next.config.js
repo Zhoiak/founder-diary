@@ -16,6 +16,14 @@ const nextConfig = {
   trailingSlash: false,
   // Output configuration for Docker
   output: 'standalone',
+  // Skip static generation for admin pages that require database
+  async generateStaticParams() {
+    return [];
+  },
+  // Disable static optimization for pages that use server-side features
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+  },
 };
 
 module.exports = nextConfig;
