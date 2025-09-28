@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, BookOpen, Target, BarChart3, TrendingUp, FileText, Command, Keyboard, Calendar, Heart, Zap, Users, GraduationCap, Settings, Briefcase } from "lucide-react";
+import { Plus, BookOpen, Target, BarChart3, TrendingUp, FileText, Command, Keyboard, Calendar, Heart, Zap, Users, GraduationCap, Settings, Briefcase, Shield } from "lucide-react";
 import Link from "next/link";
 import { ModeSelector } from "@/components/mode-selector";
 import { OnboardingWizard } from "@/components/onboarding-wizard";
@@ -165,6 +165,12 @@ export default function Dashboard() {
               />
             </div>
             <div className="flex items-center gap-3">
+              <Link href="/admin">
+                <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                  <Shield className="w-4 h-4 mr-2" />
+                  Admin
+                </Button>
+              </Link>
               <Link href="/settings">
                 <Button variant="ghost" size="sm">
                   <Settings className="w-4 h-4 mr-2" />

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { 
   ArrowLeft, Clock, CheckCircle, XCircle, Play, RefreshCw,
-  Calendar, Mail, Sunrise, Moon, Package
+  Calendar, Mail, Sunrise, Moon, Package, Shield
 } from "lucide-react";
 import Link from "next/link";
 
@@ -150,6 +150,12 @@ export default function CronAdminPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-4">
+              <Link href="/admin">
+                <Button variant="ghost" size="sm" className="hover:bg-red-50 text-red-600">
+                  <Shield className="w-4 h-4 mr-2" />
+                  Admin Dashboard
+                </Button>
+              </Link>
               <Link href="/settings">
                 <Button variant="ghost" size="sm" className="hover:bg-blue-50">
                   <ArrowLeft className="w-4 h-4 mr-2" />
