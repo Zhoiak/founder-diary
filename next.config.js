@@ -8,21 +8,21 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Turbopack configuration
-  turbopack: {
-    // Turbopack configuration
-  },
   // Skip static generation for problematic pages
   trailingSlash: false,
   // Output configuration for Docker
   output: 'standalone',
-  // Skip static generation for admin pages that require database
+  // Disable static optimization for admin pages
   async generateStaticParams() {
     return [];
   },
-  // Disable static optimization for pages that use server-side features
+  // Skip static generation for admin routes
+  async generateBuildId() {
+    return 'build-' + Date.now();
+  },
+  // Force dynamic for admin routes
   experimental: {
-    missingSuspenseWithCSRBailout: false,
+    forceSwcTransforms: true,
   },
 };
 
