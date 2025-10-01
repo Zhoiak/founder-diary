@@ -20,7 +20,6 @@ CNAME   pg        founder-diary.com   ✅      Auto
 - ✅ `www.founder-diary.com` → Redirect a founder-diary.com
 - ✅ `panel.founder-diary.com` → Dokploy (ya configurado)
 - ✅ `pg.founder-diary.com` → pgAdmin
-- ✅ `luftmist.shop` → Redirect a founder-diary.com (legacy)
 
 ### **Puertos Internos:**
 - App: `3000` (solo interno, acceso vía Nginx)
@@ -33,7 +32,6 @@ CNAME   pg        founder-diary.com   ✅      Auto
 Necesitarás certificados SSL para:
 1. `founder-diary.com` (incluye www)
 2. `pg.founder-diary.com`
-3. `luftmist.shop` (legacy)
 
 ### **Opción A: Let's Encrypt (Recomendado)**
 ```bash
@@ -43,7 +41,6 @@ apt update && apt install certbot python3-certbot-nginx
 # Generar certificados
 certbot --nginx -d founder-diary.com -d www.founder-diary.com
 certbot --nginx -d pg.founder-diary.com
-certbot --nginx -d luftmist.shop -d www.luftmist.shop
 ```
 
 ### **Opción B: Cloudflare SSL**
@@ -67,7 +64,6 @@ Después del deploy, verifica:
 - ✅ `https://founder-diary.com` → App funciona
 - ✅ `https://pg.founder-diary.com` → pgAdmin accesible
 - ✅ `https://panel.founder-diary.com` → Dokploy funciona
-- ✅ `https://luftmist.shop` → Redirect a founder-diary.com
 
 ## 🎯 **PREPARADO PARA EL FUTURO**
 
