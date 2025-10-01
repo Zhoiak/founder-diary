@@ -1,4 +1,5 @@
-version: '3.8'
+# Founder Diary - Production Docker Compose
+# Prepared for future scaling: API separation, multiple instances, etc.
 
 services:
   # PostgreSQL Database
@@ -50,15 +51,23 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
+      # Database
       - DATABASE_URL=postgresql://founder_user:FounderDiary2024!@postgres:5432/founder_diary
-      - NEXTAUTH_URL=http://85.10.194.199:3000
+      # Authentication
+      - NEXTAUTH_URL=https://founder-diary.com
       - NEXTAUTH_SECRET=P5801sh83lelWNnvDnJeaTs1bHX2Rd3WEXNBvqxEjRY=
+      # Cache
       - REDIS_URL=redis://redis:6379
+      # App URLs (prepared for future API separation)
+      - NEXT_PUBLIC_APP_URL=https://founder-diary.com
+      - NEXT_PUBLIC_API_URL=https://founder-diary.com/api
+      # Supabase (legacy, remove after migration)
       - NEXT_PUBLIC_SUPABASE_URL=https://dummy-project.supabase.co
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy
       - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy-service
-    ports:
-      - "3000:3000"
+    # Port removed - access via Nginx only (more secure)
+    # ports:
+    #   - "3000:3000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -77,14 +86,15 @@ services:
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
     volumes:
       - pgadmin_data:/var/lib/pgadmin
-    ports:
-      - "5050:80"
+    # Port removed - access via Nginx with domain pg.founder-diary.com
+    # ports:
+    #   - "5050:80"
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
 
-  # Nginx Reverse Proxy
+  # Nginx Reverse Proxy (Handles SSL, routing, caching)
   nginx:
     image: nginx:alpine
     container_name: founder-diary-nginx
@@ -93,10 +103,15 @@ services:
       - "443:443"
     volumes:
       - ./deployment/nginx.conf:/etc/nginx/nginx.conf
+      - ./deployment/proxy_params.conf:/etc/nginx/proxy_params.conf
       - ./deployment/ssl:/etc/nginx/ssl
+      - ./deployment/nginx-cache:/var/cache/nginx
     depends_on:
       - app
+      - pgadmin
     restart: unless-stopped
+    labels:
+      - "com.founder-diary.description=Reverse proxy for founder-diary.com, pg.founder-diary.com"
 
 volumes:
   postgres_data:
@@ -106,3 +121,10 @@ volumes:
 networks:
   default:
     name: founder-diary-network
+    driver: bridge
+
+# Future scaling preparation:
+# - Add api: service when separating backend
+# - Add multiple app instances with load balancing
+# - Add Redis Sentinel for high availability
+# - Add PgBouncer for connection pooling
