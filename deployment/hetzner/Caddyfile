@@ -1,0 +1,21 @@
+{
+  email admin@founder-diary.com
+}
+
+# App (Next.js)
+founder-diary.com, www.founder-diary.com {
+  encode zstd gzip
+  reverse_proxy founder-diary-app:3000
+}
+
+# Supabase public gateway (Kong)
+supabase.founder-diary.com {
+  encode zstd gzip
+  reverse_proxy kong:8000
+}
+
+# Optional: Supabase Studio UI
+studio.founder-diary.com {
+  encode zstd gzip
+  reverse_proxy studio:3000
+}

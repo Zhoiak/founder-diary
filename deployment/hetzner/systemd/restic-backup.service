@@ -1,0 +1,7 @@
+[Unit]
+Description=Nightly restic backup
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/restic.env
+ExecStart=/usr/local/bin/restic-backup.sh

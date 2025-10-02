@@ -1,0 +1,22 @@
+version: "3.9"
+
+networks:
+  infra:
+    external: true
+
+services:
+  kong:
+    networks:
+      - default
+      - infra
+  
+  studio:
+    networks:
+      - default
+      - infra
+  
+  # Optional: expose other services to infra if you need direct proxying
+  # postgrest:
+  #   networks: [default, infra]
+  # realtime:
+  #   networks: [default, infra]
