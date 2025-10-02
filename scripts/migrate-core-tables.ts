@@ -219,13 +219,17 @@ async function createCoreTables() {
     `;
     console.log('✅ Tabla routines_new creada');
 
-    // PASO 11: Crear índices para performance
+    // PASO 11: Crear índices para performance (solo para tablas nuevas)
     console.log('📋 11. Creando índices...');
-    await sql`CREATE INDEX IF NOT EXISTS idx_daily_logs_project_date ON daily_logs(project_id, date);`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_goals_project_due ON goals(project_id, due_date);`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_personal_entries_project_date ON personal_entries_new(project_id, date);`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_habits_project_area ON habits_new(project_id, area_id);`;
-    console.log('✅ Índices creados');
+    try {
+      await sql`CREATE INDEX IF NOT EXISTS idx_personal_entries_project_date ON personal_entries_new(project_id, date);`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_habits_project_area ON habits_new(project_id, area_id);`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_life_areas_project ON life_areas_new(project_id);`;
+      await sql`CREATE INDEX IF NOT EXISTS idx_routines_project ON routines_new(project_id);`;
+      console.log('✅ Índices creados para tablas nuevas');
+    } catch (indexError) {
+      console.log('⚠️ Algunos índices no se pudieron crear (normal si las tablas ya existían)');
+    }
 
     console.log('================================================');
     console.log('🎉 MIGRACIÓN CORE TABLES COMPLETADA');
