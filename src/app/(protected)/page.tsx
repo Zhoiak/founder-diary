@@ -105,8 +105,26 @@ export default function Dashboard() {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    window.location.href = "/auth";
+    // Use PostgreSQL auth signout
+    try {
+      const response = await fetch('/api/auth/signout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        window.location.href = "/auth-pg";
+      } else {
+        // Fallback to Supabase if PostgreSQL fails
+        await supabase.auth.signOut();
+        window.location.href = "/auth-pg";
+      }
+    } catch (error) {
+      console.error('Signout error:', error);
+      // Fallback to Supabase
+      await supabase.auth.signOut();
+      window.location.href = "/auth-pg";
+    }
   };
 
   const checkOnboardingNeeded = async (mode: 'founder' | 'personal', project: Project | null) => {

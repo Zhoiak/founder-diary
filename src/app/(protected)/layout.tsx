@@ -25,12 +25,38 @@ export default function ProtectedLayout({
 
   useEffect(() => {
     const getUser = async () => {
+      // First try PostgreSQL auth
+      try {
+        const response = await fetch('/api/auth/me', {
+          credentials: 'include',
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.authenticated && data.user) {
+            console.log("PostgreSQL session found, showing protected content");
+            // Create a user object compatible with Supabase format
+            const pgUser = {
+              id: data.user.id,
+              email: data.user.email,
+              user_metadata: { name: data.user.name }
+            };
+            setUser(pgUser as any);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (error) {
+        console.log("PostgreSQL auth check failed, trying Supabase");
+      }
+
+      // Fallback to Supabase auth
       const { data: { session } } = await supabase.auth.getSession();
-      console.log("Protected layout - session:", session ? "exists" : "null");
+      console.log("Protected layout - Supabase session:", session ? "exists" : "null");
       
       if (!session) {
-        console.log("No session found, redirecting to /auth");
-        router.push("/auth");
+        console.log("No session found, redirecting to /auth-pg");
+        router.push("/auth-pg");
         return;
       }
       
@@ -80,7 +106,7 @@ export default function ProtectedLayout({
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === 'SIGNED_OUT' || !session) {
-          router.push("/auth");
+          router.push("/auth-pg");
         } else {
           setUser(session.user);
           setLoading(false);
