@@ -20,15 +20,17 @@ export async function GET() {
         version() as postgres_version
     `);
     
+    console.log('DB Info result:', dbInfo);
+    
     return NextResponse.json({ 
       success: true, 
       message: 'PostgreSQL connection successful ✅',
       data: {
         userCount,
         flagCount,
-        database: dbInfo.rows[0]?.database_name,
-        user: dbInfo.rows[0]?.user_name,
-        version: dbInfo.rows[0]?.postgres_version?.split(' ')[0] + ' ' + dbInfo.rows[0]?.postgres_version?.split(' ')[1]
+        database: dbInfo[0]?.database_name || 'unknown',
+        user: dbInfo[0]?.user_name || 'unknown',
+        version: dbInfo[0]?.postgres_version?.split(' ').slice(0, 2).join(' ') || 'unknown'
       },
       timestamp: new Date().toISOString()
     });
