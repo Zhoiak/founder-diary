@@ -9,14 +9,16 @@
 - [x] **Configurar DNS para luftmist.shop**
 - [x] **Configurar SSL con Let's Encrypt**
 
-### 🔄 **EN PROGRESO**
+### 🔄 **EN PROGRESO - ALTA PRIORIDAD**
 - [ ] **Migrar datos de Supabase a PostgreSQL propio**
   - [x] Añadir pgAdmin al docker-compose
-  - [ ] Crear esquema completo en PostgreSQL
-  - [ ] Exportar datos de 68 tablas de Supabase
-  - [ ] Importar datos a PostgreSQL propio
-  - [ ] Actualizar variables de entorno de la app
-  - [ ] Verificar funcionamiento completo
+  - [x] **PASO 1**: Verificar acceso a pgAdmin (pg.founder-diary.com)
+  - [ ] **PASO 2**: Crear esquema completo en PostgreSQL
+  - [ ] **PASO 3**: Exportar datos de 68 tablas de Supabase
+  - [ ] **PASO 4**: Importar datos a PostgreSQL propio
+  - [ ] **PASO 5**: Actualizar variables de entorno de la app
+  - [ ] **PASO 6**: Verificar funcionamiento completo
+  - [ ] **PASO 7**: Desconectar Supabase definitivamente
 
 ### ⏳ **PENDIENTES**
 - [ ] **Implementar Better Auth**
