@@ -49,7 +49,12 @@
   - [ ] Evaluar costos vs beneficios
   - [ ] Implementar si es necesario
 
-- [ ] **Crear panel de administración dev**
+- [x] **Crear panel de administración dev**
+  - [x] Ruta `/admin/dev-tools` creada
+  - [x] Panel con acceso a Dokploy, pgAdmin, Redis
+  - [x] Indicadores de estado para cada servicio
+  - [x] API endpoint para verificar servicios
+  - [x] Diseño responsive con Tailwind + shadcn/ui
   - [ ] Diseñar interfaz de herramientas
   - [ ] Integrar acceso a pgAdmin
   - [ ] Añadir enlaces a Dokploy

@@ -222,6 +222,12 @@ export default function AdminDashboard() {
                   ← Back to Dashboard
                 </Button>
               </Link>
+              <Link href="/admin/dev-tools">
+                <Button variant="outline" size="sm" className="hover:bg-green-50">
+                  <Server className="w-4 h-4 mr-2" />
+                  Dev Tools
+                </Button>
+              </Link>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                   <Shield className="w-6 h-6 text-red-500" />
