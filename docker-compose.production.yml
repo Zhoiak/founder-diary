@@ -87,8 +87,8 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     # Port removed - access via Nginx with domain pg.founder-diary.com
-    # ports:
-    #   - "5050:80"
+    ports:
+      - "5050:80"
     depends_on:
       postgres:
         condition: service_healthy
